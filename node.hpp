@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bst.hpp                                            :+:      :+:    :+:   */
+/*   node.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: csejault <csejault@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,11 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 //SOURCES :	Introduction to Algorithms : Thomas H. Cormen - Charles E. Leiserson - Ronald L. Rivest - Clifford Stein
-//Class_Name = bst
+//Class_Name = node
 
 //define{
-#ifndef BST_HPP
-# define BST_HPP
+#ifndef NODE_HPP
+# define NODE_HPP
 
 # ifndef COL_GREEN
 #  define COL_GREEN 		"\033[0;32m"
@@ -30,20 +30,22 @@
 # endif
 
 # include <iostream>
-# include "node.hpp"
-template < typename T >
-class node;
 //define - END}
 
 template < typename T >
-class	bst {
+class	node {
+
 	public:
-		typedef	typename node<T>::node_type		node_type;
-		typedef	typename node<T>::nd			nd;
-		typedef	typename node<T>::value_type	value_type;
+		typedef node<T> 	node_type;
+		typedef node_type* 	nd;
+		typedef T			value_type;
+		typedef T*			pointer;
+		typedef T&			reference;
+
 		//pub_constructor{
-		bst( void ) : root(NULL) {}
-		~bst( void ) { delete_tree(root); }
+		node(value_type k) : p(NULL), left(NULL), right(NULL), key(k)   {}
+		~node( void ) {
+		}
 		//pub_constructor - END}
 
 		//pub_operator{
@@ -53,7 +55,6 @@ class	bst {
 		//pub_debug - END}
 
 		//pub_static{
-
 		//pub_static - END}
 
 		//pub_getter{
@@ -66,114 +67,61 @@ class	bst {
 		//pub_exception - END}
 
 		//pub_fct{
-		void	add_value(value_type k)
+		void	print_key( void ) {
+			std::cout << key << std::endl;
+		}
+		nd	minimum( void )
 		{
-			nd n = new node_type(k);
-			t_insert(n);
+			node m;
+
+			while (m->left)
+				m = m->left;
+			return (m);
 		}
 
-		void	delete_tree( nd p ) {
-			if (p)
+		nd	maximum( void )
+		{
+			node m;
+
+			while (m->right)
+				m = m->right;
+			return (m);
+		}
+
+		nd predecessor(nd n)
+		{
+			nd s = NULL;
+			if (n->left)
+				return (n->left->minimum());
+			s = n->p;
+			while(s && n == s->left)
 			{
-				delete_tree(p->left);
-				delete p;
-				delete_tree(p->right);
+				n = s;
+				s = s->p;
 			}
+			return (s);
 		}
 
-		void	inorder_walk( void ) {
-			inorder_walk(root);
-		}
-
-		void	inorder_walk( nd p ) {
-			if (p)
+		nd successor(nd n)
+		{
+			nd s = NULL;
+			if (n->right)
+				return (n->right->minimum());
+			s = n->p;
+			while(s && n == s->right)
 			{
-				inorder_walk(p->left);
-				p->print_key();
-				inorder_walk(p->right);
+				n = s;
+				s = s->p;
 			}
-		}
-
-		nd	search(nd n, value_type k)
-		{
-			if (!n || n->key == k)
-				return (n);
-			if (k < n->key)
-				return (search(n->left, k));
-			else
-				return (search(n->right, k));
-		}
-
-		nd	iterative_search(nd n, value_type k)
-		{
-			while (n && k != n->key)
-			{
-				if (k < n->key)
-					n = n->left;
-				else
-					n = n->right;
-			}
-			return (n);
-		}
-
-		void	t_insert(nd n)
-		{
-			nd y = NULL;
-			nd x = root;
-			while (x)
-			{
-				y = x;
-				if (n->key < x->key)
-					x = x->left;
-				else
-					x = x->right;
-			}
-			n->p = y;
-			if (!y)
-				root = n;
-			else if (n->key < y->key)
-				y->left = n;
-			else
-				y->right = n;
-		}
-
-		void transplant(nd u, nd v)
-		{
-			nd t = root;
-			if (!u->p)
-				*t = v;
-			else if (u == u->p->left)
-				u->p->left = v;
-			else
-				u->p->right = v;
-			if (v)
-				v->p = u->p;
-		}
-
-		void	t_delete(nd z)
-		{
-			if (!z->left)
-				transplant(z,z->right);
-			else if (!z->right)
-				transplant(z,z->left);
-			else
-			{
-				nd y = z->right->minimum();
-				if (y->p != z)
-				{
-					transplant(y,y->right);
-					y->right = z->right;
-					y->right->p = y;
-				}
-				transplant(z,y);
-				y->left = z->left;
-				y->left->p = y;
-			}
+			return (s);
 		}
 		//pub_fct - END}
 
 		//pub_var{
-		nd		root;
+		nd		p;
+		nd		left;
+		nd		right;
+		value_type	key;
 		//pub_var - END}
 
 	private:
@@ -181,6 +129,7 @@ class	bst {
 		//priv_debug - END}
 
 		//priv_constructor{
+		node( void ) {};
 		//priv_constructor - END}
 
 		//priv_static{
@@ -191,7 +140,7 @@ class	bst {
 };
 
 //out_class{
-//std::ostream &	operator<<(std::ostream &os, bst &to_print);
+//std::ostream &	operator<<(std::ostream &os, node &to_print);
 //out_class - END}
 
 #endif
